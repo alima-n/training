@@ -8,7 +8,7 @@ export const doCreateUser = (id, username, email, avatar) =>
     });
 
 export const onceGetUsers = () =>
-    db.ref('users').once('value');
+    db.ref('users').once('value').then(snapshot => snapshot.val());
     
 export const onceGetTestimonials = () =>
     db.ref('testimonials').once('value');

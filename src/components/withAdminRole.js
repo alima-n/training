@@ -1,33 +1,28 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { connect } from 'react-redux'; 
 import { db } from '../firebase';
+
 
 const withAdminRole = (Component) => {
   class WithAdminRole extends React.Component {
-        constructor(props) {
-            super(props);
 
-            this.state = {
-                isAdmin: false,
-            };
-        }
-
-        getChildContext() {
-            return {
-              isAdmin: this.state.isAdmin,
-            };
+        state = {
+            authUser: this.props.authUser,
+            isAdmin: false,
         }
 
         setStateAsync = state =>
             new Promise(resolve => this.setState(state, resolve));
         
         async componentDidMount() {
-            const { authUser }  = this.context;
-            this.context.authUser
+            const { authUser }  = this.props;
+
+            authUser
             ? this.setStateAsync({
                 isAdmin: await db.isAdmin(authUser.uid).then(snapshot => snapshot.val())
             })
-            : this.setState(() => ({ isAdmin: false }));          
+            : this.setState(() => ({ isAdmin: false })); 
+            
         }
 
         render() {
@@ -35,15 +30,11 @@ const withAdminRole = (Component) => {
         }
     }
 
-    WithAdminRole.contextTypes = {
-        authUser: PropTypes.object,
-    };
-
-    WithAdminRole.childContextTypes = {
-        isAdmin: PropTypes.bool
-    };
+    const mapStateToProps = (state) => ({
+        authUser: state.sessionState.authUser,
+    });
     
-    return WithAdminRole;
+    return connect(mapStateToProps)(WithAdminRole);
 }
 
 export default withAdminRole;

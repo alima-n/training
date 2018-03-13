@@ -21,7 +21,7 @@ import BookingEdit from '../components/Admin/BookingEdit';
 
 import * as events from '../constants/events';
 import * as routes from '../constants/routes';
-import { COURSES_SET, USERS_SET, BOOKING_SET } from '../constants/AC';
+import { COURSES_SET } from '../constants/AC';
 import { firebase, db } from '../firebase';
 import withAuthentication from './withAuthentication';
 
@@ -40,14 +40,12 @@ class App extends Component {
 			: this.setState(() => ({ authUser: null }));
 		});
 
-		const { onSetCourses, onSetUsers, onSetBooking } = this.props;
+		const { onSetCourses } = this.props;
 		Object.keys(events).map(key => db.doAddListenerToRef(db.coursesRef, events[key], onSetCourses));
-		Object.keys(events).map(key => db.doAddListenerToRef(db.usersRef, events[key], onSetUsers));
-		Object.keys(events).map(key => db.doAddListenerToRef(db.bookingRef, events[key], onSetBooking));
 	}
 
 	render(){
-		const { courses, users, booking } = this.props
+		const { courses } = this.props
 
 		return (
 			<Router>
@@ -104,7 +102,7 @@ class App extends Component {
 					/>
 					<Route
 						exact path={routes.USERS_EDIT}
-						component={() => <UsersEdit users={users} />}
+						component={() => <UsersEdit />}
                     />
                     <Route
                         exact path={routes.COURSES_EDIT}
@@ -112,7 +110,7 @@ class App extends Component {
                     />
 					<Route
 						exact path={routes.BOOKING_EDIT}
-						component={() => <BookingEdit booking={booking}/>}
+						component={() => <BookingEdit />}
 					/>
 				
 					<Footer />
@@ -124,22 +122,12 @@ class App extends Component {
 
 const mapStateToProps = (state) => ({
 	courses: state.coursesState.courses,
-	users: state.usersState.users,
-	booking: state.bookingState.booking,
 })
   
 const mapDispatchToProps = (dispatch) => ({
 	onSetCourses: (courses) => dispatch({ 
 		type: COURSES_SET, 
-		courses }),
-	onSetUsers: (users) => dispatch({
-		type: USERS_SET,
-		users
-	}),
-	onSetBooking: (booking) => dispatch({
-		type: BOOKING_SET,
-		booking
-	})
+		courses })
 })
 
 export default compose(

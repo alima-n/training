@@ -3,19 +3,22 @@ import withAdminRole from '../withAdminRole';
 import { db } from '../../firebase';
 import Async from 'react-promise';
 
+import './style.css';
+
 class UsersEdit extends Component {
 
-    componentDidMount() {
-
+    state = {
+        users: null,
+        showEditPanel: '',
     }
 
     render() {
-        const { users } = this.props;
+        const users = db.onceGetUsers();
 
         return (
             <div>
                 Юзеры
-                {this.getBody(users)}
+                <Async promise={users} then={(val) => <span>{this.getBody(val)}</span>}/>
             </div>
         )
     }
@@ -28,14 +31,16 @@ class UsersEdit extends Component {
                     <div>{users[key].email}</div>
                     <div>{users[key].phone || "Нет номера"}</div>
                     {users[key].courses ? <div>Выбраны курсы: {this.getCourses(users[key].courses)}</div>: <div>Нет забронированных курсов</div> }
-                </li>   
+                    <button type="submit" onClick={this.handleEditUserClick.bind(null, key)}>Редактировать</button>
+                    {this.state.showEditPanel === key && <EditPanel user={users[key]}/>}
+                </li>  
             )}
         </ul>
 
     getCourses =  (courses) => 
         <ul>
             {Object.keys(courses).map((key) => {
-                let name = db.doGetCourseInfo(key, 'name');
+                const name = db.doGetCourseInfo(key, 'name');
                 return (<li key={key}>
                     <Async promise={name} then={(val) => <span>{val}</span>}/>
                 </li>)
@@ -43,6 +48,14 @@ class UsersEdit extends Component {
             )}
         </ul>
     
+    handleEditUserClick = (key) => {
+        this.setState({ showEditPanel: key })
+    }
+    
+}
+
+const EditPanel = () => {
+    return <div className="edit_popup">РЕДАКТИРОВАТЬ</div>
 }
 
 export default withAdminRole(UsersEdit);

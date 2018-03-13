@@ -22,7 +22,6 @@ const AdminNavigation = () =>
         <li><Link to={routes.BOOKING_EDIT}>Бронирования</Link></li>
     </ul>
 
-
 const AdminLink = () =>
 	<p>
 		Перейти в панель администратора
