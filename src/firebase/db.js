@@ -1,4 +1,4 @@
-import { db } from './firebase';
+import { db, storage } from './firebase';
 
 export const doCreateUser = (id, username, email, avatar) =>
     db.ref(`users/${id}`).set({
@@ -8,7 +8,7 @@ export const doCreateUser = (id, username, email, avatar) =>
     });
 
 export const onceGetUsers = () =>
-    db.ref('users').once('value').then(snapshot => snapshot.val());
+    db.ref('users').once('value');
     
 export const onceGetTestimonials = () =>
     db.ref('testimonials').once('value');
@@ -21,6 +21,17 @@ export const doUpdateUserInfo = async (uid, field, value) => {
 
     return data.update({
 		[field]: value
+	})
+}
+
+export const doUpdateAvatar = async (uid, file) => {
+    const data = db.ref(`users/${uid}`);
+    const snapshot = await storage.ref(`${uid}/photoURL/`).put(file);
+    const fileRef = await storage.refFromURL(storage.ref(snapshot.metadata.fullPath).toString());
+    const url = await fileRef.getMetadata().then(metadata => metadata.downloadURLs[0])
+
+    return data.update({
+		avatar: url
 	})
 }
 
@@ -69,4 +80,11 @@ export const doBookCourse = (courseId, uid) =>
         confirmed: true,
         paid: false
     })
+
+export const doRemoveBooking = (uid, courses) =>
+    courses.map(key => {
+        db.ref(`users/${uid}/courses/${key}`).remove();
+        db.ref(`booking/${key}/${uid}`).remove();
+    });
+
 

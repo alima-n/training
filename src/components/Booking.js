@@ -87,7 +87,7 @@ class BookingPage extends Component {
         event.preventDefault();
         const { courseId } = this.props;
         db.doUpdateUserInfo(uid, 'phone', this.state.phone);
-        db.doUpdateUserInfo(uid, `courses/${courseId}`, new Date());
+        db.doUpdateUserInfo(uid, `courses/${courseId}`, +new Date());
 
         db.doBookCourse(courseId, uid)
         .then(() => this.setState(getValueByProp('success', true)))

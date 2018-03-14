@@ -6,11 +6,11 @@ import withAdminRole from '../withAdminRole';
 class AdminPage extends Component {
     render() {
         return (
-                <div>
-                    <h1>Панель администратора</h1>
-                    <p>Просмотр только для группы пользователей admins</p>
-                    <AdminNavigation />
-                </div>  
+            <div>
+                <h1>Панель администратора</h1>
+                <p>Просмотр только для группы пользователей admins</p>
+                <AdminNavigation />
+            </div>  
         )
     }
 }
