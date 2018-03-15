@@ -14,18 +14,18 @@
     top: 25%;
     padding:30px; 
 }
-table#userlist{
+table#userlist, table#bookinglist{
     width: 100%;
     text-align: left;
 }
-table#userlist, table#userlist th, table#userlist td{
+table#userlist, table#userlist th, table#userlist td, table#bookinglist, table#bookinglist th, table#bookinglist td{
     border: 1px solid black;
     border-collapse: collapse;
 }
-table#userlist th, table#userlist td{
+table#userlist th, table#userlist td, table#bookinglist th, table#bookinglist td{
     padding-left: 5px;
 }
-table#userlist caption{
+table#userlist caption, table#bookinglist caption{
     font-size: 2rem;
     background: lightgray;
 }
@@ -33,7 +33,7 @@ table#userlist img{
     width: 60px;
     height: 60px;
 }
-table#userlist tr:nth-child(odd) {
+table#userlist tr:nth-child(odd), table#bookinglist tr:nth-child(odd) {
     background-color: rgb(223, 228, 245);
 }
 .userlist__edit{
@@ -52,6 +52,13 @@ table#userlist tr:nth-child(odd) {
     list-style: none;
     display: inline-block;
     padding: 0;
+}
+.userlist__remove-user-btn{
+    color: red;
+    font-weight: 600;
+}
+table#bookinglist select{
+    margin: 0 5px;
 }
 .paginator{
     display: inline-block;

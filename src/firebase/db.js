@@ -9,6 +9,9 @@ export const doCreateUser = (id, username, email, avatar) =>
 
 export const onceGetUsers = () =>
     db.ref('users').once('value');
+
+export const onceGetBooking = () =>
+    db.ref('booking').once('value');
     
 export const onceGetTestimonials = () =>
     db.ref('testimonials').once('value');
@@ -56,7 +59,7 @@ export const coursesRef = db.ref('courses').limitToLast(50);
 export const usersRef = db.ref('users').limitToLast(50);
 export const bookingRef = db.ref('booking').limitToLast(50);
 
-export const doCreateEvent = (name, type, start, end, price, modules, description) => db.ref('courses').push({
+export const doCreateEvent = (randomId, name, type, start, end, price, modules, description) => db.ref(`courses/${randomId}`).set({
     name, 
     type, 
     start, 
@@ -72,19 +75,36 @@ export const doGetUserInfo = (id, field) =>
 export const doGetCourseInfo = (id, field) => 
     db.ref(`courses/${id}/${field}`).once('value').then(snapshot => snapshot.val());
 
-export const doCheckIfBookingExists = (uid, courseId) => 
-    db.ref(`booking/${courseId}/${uid}/confirmed`).once('value').then(snapshot => snapshot.val());
+export const doCheckIfBookingExists = (courseId, uid) => 
+    db.ref(`booking/${courseId}_${uid}/confirmed`).once('value').then(snapshot => snapshot.val());
 
 export const doBookCourse = (courseId, uid) => 
-    db.ref(`booking/${courseId}/${uid}`).set({
+    db.ref(`booking/${courseId}_${uid}`).set({
         confirmed: true,
-        paid: false
+        paid: false,
+        date: +new Date(),
     })
 
-export const doRemoveBooking = (uid, courses) =>
-    courses.map(key => {
-        db.ref(`users/${uid}/courses/${key}`).remove();
-        db.ref(`booking/${key}/${uid}`).remove();
+export const doUpdateBooking = async (id, field, value) => {
+    const data = await db.ref(`booking/${id}`);
+
+    return data.update({
+		[field]: value
+	})
+}
+
+
+export const doRemoveBooking = (id) =>
+    db.ref(`booking/${id}`).remove();
+
+export const doRemoveUser = (uid) => {
+    db.ref(`users/${uid}`).remove();
+
+    onceGetBooking().then(snapshot => {
+        const bookingToRemove = Object.keys(snapshot.val()).filter(key => key.includes(uid));
+        bookingToRemove.map(id => doRemoveBooking(id));
     });
+}
+    
 
 

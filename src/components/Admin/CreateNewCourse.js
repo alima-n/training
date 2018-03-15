@@ -5,6 +5,7 @@ import { EditorState } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import './style.css';
+import { randomId } from '../../utils';
 
 const INITIAL_STATE = {
     isAdmin: null,
@@ -71,6 +72,9 @@ class CreateNewCourse extends Component {
                     wrapperClassName="wrapperClassName"
                     editorClassName="editorClassName"
                     onEditorStateChange={this.onEditorStateChange}
+                    toolbar={{
+                        image: {uploadEnabled: true}
+                    }}
                 />
 
                 <button type="submit">Отправить</button>
@@ -81,7 +85,7 @@ class CreateNewCourse extends Component {
                 
     }
 
-    onEditorStateChange: Function = (editorState) => {
+    onEditorStateChange = (editorState) => {
         this.setState({
           editorState,
         });
@@ -89,22 +93,17 @@ class CreateNewCourse extends Component {
 
     onSubmit = (event) => {
         event.preventDefault();
-
-        const { name, type, start, end, price, modules, editorState} = this.state
-
-        const contentState = editorState.getCurrentContent() 
-
-        const contentAsHTML = stateToHTML(contentState)
-
-        db.doCreateEvent(name, type, start, end, price, modules, contentAsHTML) 
-
+        const { name, type, start, end, price, modules, editorState} = this.state;
+        const contentState = editorState.getCurrentContent();
+        const contentAsHTML = stateToHTML(contentState);
+ 
+        db.doCreateEvent(randomId(), name, type, start, end, price, modules, contentAsHTML);
         this.setState({ ...INITIAL_STATE })
-
     }
 
     getValueByProp = (propertyName, value) => () => ({
         [propertyName]: value,
-    })
+    });
 }
 
 export default CreateNewCourse;

@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import Async from 'react-promise';
 import withAdminRole from '../withAdminRole';
 import { db } from '../../firebase';
-import EditPanel from './EditPanel';
+import EditUserPanel from './EditUserPanel';
+import { AdminNavigation } from './';
 import Paginator from '../Paginator';
 import * as events from '../../constants/events';
-import { dateOptions } from '../../utils';
 import './style.css';
 
 const INITIAL_STATE = {
     users: {},
+    booking: {},
     currentPage: 1,
     usersPerPage: 5,
     showEditPanel: '',
@@ -21,30 +22,28 @@ class UsersEdit extends Component {
     }
 
     setStateAsync = state =>
-        new Promise(resolve => this.setState(state, resolve))
-    
-    onSetUsers = (data) => {
-        this.setState({ users: data })
-    }
+        new Promise(resolve => this.setState(state, resolve));
 
     async componentDidMount() {
         this.setStateAsync({
-			users: await db.onceGetUsers().then(snapshot => snapshot.val())
+            users: await db.onceGetUsers().then(snapshot => snapshot.val()),
+            booking: await db.onceGetBooking().then(snapshot => snapshot.val()),
         });
 
         Object.keys(events).map(key => db.doAddListenerToRef(db.usersRef, events[key], this.onSetUsers));
+        Object.keys(events).map(key => db.doAddListenerToRef(db.bookingRef, events[key], this.onSetBooking));
     }
 
-    componentWillUnmount() {
-        this.setState({ ...INITIAL_STATE });
-    }
+    onSetUsers = data => this.setState({ users: data });
+
+    onSetBooking = data => this.setState({ booking: data });
 
     render() {
-        const { users, currentPage, usersPerPage } = this.state;
+        const { users, booking, currentPage, usersPerPage } = this.state;
         const indexOfLastUser = currentPage * usersPerPage;
         const indexOfFirstUser = indexOfLastUser - usersPerPage;
-        const currentUsers =  Object.entries(users).slice(indexOfFirstUser, indexOfLastUser);
-
+        const currentUsers =  Object.entries(users).slice(indexOfFirstUser, indexOfLastUser); 
+        
         const renderUsers = currentUsers.map(entry => {
             return (
                 <React.Fragment key={entry[0]}>
@@ -53,19 +52,19 @@ class UsersEdit extends Component {
                         <td>{entry[1].username}</td>
                         <td>{entry[1].email}</td>
                         <td>{entry[1].phone || 'Нет телефона'}</td>
-                        <td>{entry[1].courses ? this.getCourses(entry[1].courses) : 'Нет бронирования'}</td>
+                        <td>{this.getCourses(entry[0], booking)}</td>
                         <td>
                             <span 
                                 onClick={this.handleEditUserClick.bind(null, entry[0])} 
                                 className="userlist__edit">
-                            Редактировать
+                                Редактировать
                             </span>
                         </td>  
                     </tr>
                     {this.state.showEditPanel === entry[0] && 
                         <tr>
                             <td colSpan="6">
-                                <EditPanel uid={entry[0]} user={entry[1]} onSubmit={this.handleEditSubmit} className="userlist__edit-panel" />
+                                <EditUserPanel uid={entry[0]} booking={booking} onSubmit={this.handleEditSubmit} />
                             </td>
                         </tr>
                     }
@@ -75,16 +74,12 @@ class UsersEdit extends Component {
 
         return (
             <div>
+                <AdminNavigation />
                 <table id="userlist">
                     <caption>Зарегистрированные пользователи</caption>
                     <tbody>
                         <tr>
-                            <th>Фото</th>
-                            <th>ФИО</th>
-                            <th>Email</th>
-                            <th>Телефон</th>
-                            <th>Курсы</th>
-                            <th>Редактировать</th>
+                            <th>Фото</th><th>ФИО</th><th>Email</th><th>Телефон</th><th>Курсы</th><th>Редактировать</th>
                         </tr>
                         {renderUsers}
                     </tbody>
@@ -100,39 +95,40 @@ class UsersEdit extends Component {
         )
     }
 
-    handleEditUserClick = (key) => {
-        if(this.state.showEditPanel === key) {
-            this.setState({ showEditPanel: '' })
-        } else {
-            this.setState({ showEditPanel: key })
-        }
-        
-    }
+    handleEditUserClick = key => 
+        this.state.showEditPanel === key 
+        ? this.setState({ showEditPanel: '' }) 
+        : this.setState({ showEditPanel: key })
 
-    handlePageClick = (page) => {
-        this.setState({
-          currentPage: page
+    handlePageClick = page => this.setState({ currentPage: page });
+
+    handleEditSubmit = () => this.setState({ showEditPanel: '' });
+
+    getCourses = (uid, booking) => {
+        const courses = [];
+
+        Object.keys(booking).map(key => {
+            if(key.includes(uid)){
+                courses.push(key)
+            }
         });
-    }
 
-    handleEditSubmit = () => {
-        this.setState({ showEditPanel: '' })
-    }
+        if(courses.length === 0) return 'Нет бронирования';
 
-    getCourses = (courses) => 
-        <ul className="userlist__courses">
-            
-            {Object.keys(courses).map(key => {
-                const name = db.doGetCourseInfo(key, 'name');
-                return (
-                    <li key={key}>
-                        <Async promise={name} then={(val) => <span>{val}</span>}/>
-                        <span>Забронировано {new Date(courses[key]).toLocaleString('ru', dateOptions)}</span>
-                    </li>
+        return (
+            <ul className="userlist__courses">  
+                {courses.map(key => {
+                    const courseId = key.slice(0, key.indexOf('_'));
+                    const name = db.doGetCourseInfo(courseId, 'name');
+                    return (
+                        <li key={courseId}>
+                            <Async promise={name} then={(val) => <span>{val}</span>}/>
+                        </li>
+                    )}
                 )}
-            )}
-        </ul> 
+            </ul> 
+        )
+    }
 }
-
 
 export default withAdminRole(UsersEdit);

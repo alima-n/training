@@ -31,7 +31,7 @@ class BookingPage extends Component {
             const uid = this.props.user.uid;
 
             this.setStateAsync({
-                bookingExists: await db.doCheckIfBookingExists(uid, courseId),
+                bookingExists: await db.doCheckIfBookingExists(courseId, uid),
             }) 
         }
 	}
@@ -87,7 +87,6 @@ class BookingPage extends Component {
         event.preventDefault();
         const { courseId } = this.props;
         db.doUpdateUserInfo(uid, 'phone', this.state.phone);
-        db.doUpdateUserInfo(uid, `courses/${courseId}`, +new Date());
 
         db.doBookCourse(courseId, uid)
         .then(() => this.setState(getValueByProp('success', true)))

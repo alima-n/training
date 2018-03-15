@@ -45,7 +45,8 @@ class App extends Component {
 	}
 
 	render(){
-		const { courses } = this.props
+		const { courses } = this.props;
+		const { authUser } = this.state;
 
 		return (
 			<Router>
@@ -54,7 +55,7 @@ class App extends Component {
 					<hr/>
 					<Route
 						exact path={routes.LANDING}
-						component={() => <LandingPage />}
+						component={() => <LandingPage user={authUser}/>}
 					/>
 					<Route
 						exact path={routes.SIGN_UP}

@@ -7,23 +7,21 @@ const INITIAL_STATE = {
     username: '',
     email: '',
     phone: '',
-    error: null,
 }
 
 const coursesToRemove = [];
 
-class EditPanel extends Component {
+class EditUserPanel extends Component {
 
     state = {
         ...INITIAL_STATE
     }
 
     render() {
-        const { user: {courses} } = this.props;
-        const { error }= this.state;
+        const { uid, booking } = this.props;
 
         return (
-            <div className={this.props.className}>
+            <div className="userlist__edit-panel">
                 <form onSubmit={this.onSubmit}>
                     <label>Изменить фото профиля
                         <input type="file" onChange={this.handleFileChange} />
@@ -37,10 +35,10 @@ class EditPanel extends Component {
                     <label>Изменить номер телефона
                         <input type="tel" onChange={this.handleTextChange.bind(null, 'phone')} placeholder="Новый телефон" />
                     </label>
-                    {courses ? this.getCourses(courses) : null}
+                    {this.getCourses(uid, booking)}
                     <button type="submit">Сохранить изменения</button>
                 </form>
-                {error && error.message}
+                <button type="submit" onClick={db.doRemoveUser.bind(null, uid)} className="userlist__remove-user-btn">Удалить пользователя</button>
             </div>
         )
     }
@@ -55,33 +53,48 @@ class EditPanel extends Component {
         this.setState({ [field]: value});
     }
 
-    handleCheckboxClick = (event) => {
+    handleCheckboxClick = event => {
         const id = event.target.id;
         
         if(event.target.checked && !coursesToRemove.find(x => x === id)) {
             coursesToRemove.push(id);
         } else {
             coursesToRemove.splice(coursesToRemove.indexOf(id), 1);
-        }        
+        }      
+
     }
 
-    getCourses = (courses) => 
-        <div> Удалить бронь
-            {Object.keys(courses).map(key => {
-                const name = db.doGetCourseInfo(key, 'name');
-                return (
-                    <div key={key}>
-                        <Async promise={name} then={(val) => 
-                            <label htmlFor={key}> 
-                                {val}
-                                <input type="checkbox" id={key} onClick={this.handleCheckboxClick} />
-                            </label>}
-                        />
-                    </div>
-                )}
-            )}
-        </div>
+    getCourses = (uid, booking) => {
+        const courses = [];
 
+        Object.keys(booking).map(key => {
+            if(key.includes(uid)){
+                courses.push(key)
+            }
+        });
+
+        if(courses.length === 0) return 'Нет бронирования';
+
+        return (
+            <div> Удалить бронь
+                {courses.map(key => {
+                    const courseId = key.slice(0, key.indexOf('_'));
+                    const name = db.doGetCourseInfo(courseId, 'name');
+                    console.log(key, courseId)
+                    return (
+                        <div key={courseId}>
+                            <Async promise={name} then={(val) => 
+                                <label htmlFor={key}> 
+                                    {val}
+                                    <input type="checkbox" id={key} onClick={this.handleCheckboxClick} />
+                                </label>}
+                            />
+                        </div>
+                    )}
+                )}
+            </div>
+        )
+    }
         
     onSubmit = event => {
         event.preventDefault();
@@ -92,10 +105,10 @@ class EditPanel extends Component {
         if(username) db.doUpdateUserInfo(uid, 'username', username);
         if(email) db.doUpdateUserInfo(uid, 'email', email);
         if(phone) db.doUpdateUserInfo(uid, 'phone', phone);
-        if(coursesToRemove) db.doRemoveBooking(uid, coursesToRemove);
+        if(coursesToRemove) db.doRemoveBooking(coursesToRemove);
 
         this.props.onSubmit();
     }
 }
 
-export default EditPanel;
+export default EditUserPanel;

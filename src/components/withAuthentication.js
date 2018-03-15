@@ -8,10 +8,10 @@ const withAuthentication = (Component) => {
         
     componentDidMount() {
         const { onSetAuthUser } = this.props;
-
+        
         firebase.auth.onAuthStateChanged(authUser => {
             if(authUser) {
-                onSetAuthUser(authUser)
+                onSetAuthUser(authUser);
             }                         
         })
     }

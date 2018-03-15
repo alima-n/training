@@ -1,7 +1,6 @@
 import React, { Component }from 'react';
-import PropTypes from 'prop-types';
 import { db } from '../firebase';
-import { getValueByProp } from '../utils'
+import { getValueByProp } from '../utils';
 
 const INITIAL_STATE = {
 	username: '',
@@ -11,13 +10,53 @@ const INITIAL_STATE = {
     sent: false
 };
 
-class SubscribeForm extends Component {
+class SubscriptionForm extends Component {
 
-    constructor(props) {
-		super(props);
-		this.state = { ...INITIAL_STATE };
+    state = {
+        ...INITIAL_STATE
     }
     
+    render() {
+        const {
+			username,
+			email,
+            phone,
+            error, 
+            sent
+        } = this.state;
+        
+        const isInvalid = email === '';
+
+        const { user } = this.props;
+
+        return (
+            <form onSubmit={this.onSubmit}>
+                <h4>Подпишитесь на нашу рассылку и мы обещаем, что вы пожалеете</h4>
+                {!user && <input
+                    value={username}
+                    onChange={event => this.setState(getValueByProp('username', event.target.value))}
+                    type="text"
+                    placeholder="Как к вам обращаться?"
+                />}
+                <input
+                    value={email}
+                    onChange={event => this.setState(getValueByProp('email', event.target.value))}
+                    type="email"
+                    placeholder="Email*"     
+                />
+                <input
+                    value={phone}
+                    onChange={event => this.setState(getValueByProp('phone', event.target.value))}
+                    type="tel"
+                    placeholder="Номер телефона"
+                />
+                <button disabled={isInvalid} type="submit">Подписаться</button>
+                {sent && <p>Вы благополучно подписались на спам!</p>}
+                { error && <p>{error.message}</p> }
+			</form>
+        )
+    }
+
     onSubmit = (event) => {
         event.preventDefault();
 
@@ -40,50 +79,8 @@ class SubscribeForm extends Component {
             sent: true
         })
     }
-
-    render() {
-        const {
-			username,
-			email,
-            phone,
-            error, 
-            sent
-        } = this.state;
-        
-        const isInvalid = email === '';
-
-        return (
-            <form onSubmit={this.onSubmit}>
-                <h4>Подпишитесь на нашу рассылку и мы обещаем, что вы пожалеете</h4>
-                <input
-                    value={username}
-                    onChange={event => this.setState(getValueByProp('username', event.target.value))}
-                    type="text"
-                    placeholder="Как к вам обращаться?"
-                /> 
-                <input
-                    value={email}
-                    onChange={event => this.setState(getValueByProp('email', event.target.value))}
-                    type="email"
-                    placeholder="Email*"     
-                />
-                <input
-                    value={phone}
-                    onChange={event => this.setState(getValueByProp('phone', event.target.value))}
-                    type="tel"
-                    placeholder="Номер телефона"
-                />
-                <button disabled={isInvalid} type="submit">Подписаться</button>
-                {sent && <p>Вы благополучно подписались на спам!</p>}
-                { error && <p>{error.message}</p> }
-			</form>
-        )
-    }
 }
 
-SubscribeForm.contextTypes = {
-    authUser: PropTypes.object,
-};
 
   
-export default SubscribeForm;
+export default SubscriptionForm;

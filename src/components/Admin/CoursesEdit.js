@@ -10,7 +10,8 @@
 
 import React, { Component } from 'react';
 import withAdminRole from '../withAdminRole';
-
+import CreateNewCourse from './CreateNewCourse';
+import { AdminNavigation } from './';
 
 class CoursesEdit extends Component {
 
@@ -21,6 +22,8 @@ class CoursesEdit extends Component {
     render() {
         return (
             <div>
+                 <AdminNavigation />
+                 <CreateNewCourse />
                 Курсы
             </div>
         )
